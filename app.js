@@ -1,36 +1,37 @@
 'use strict';
 // Yahoo Finance chart API is accessed through the companion Cloudflare Worker.
-const PROXY_BASE='https://check.petdamon.workers.dev';
+const PROXY_BASE='https://pmc.mcraft-tiger-574.workers.dev';
 const $=id=>document.getElementById(id);
 const blank='—';
 const groups=[
   {label:'미국 증시',items:[
     {id:'nasdaq',no:1,name:'나스닥 종합',ticker:'^IXIC',unit:'index',percentChart:true},
     {id:'sp500',no:2,name:'S&P 500',ticker:'^GSPC',unit:'index',percentChart:true},
-    {id:'nasdaq-futures',no:'',name:'나스닥 선물',ticker:'NQ=F',unit:'index',decimals:2,percentChart:true},
-    {id:'sp500-futures',no:'',name:'S&P 500 선물',ticker:'ES=F',unit:'index',decimals:2,percentChart:true},
+    {id:'nasdaq-futures',no:1,name:'나스닥 선물',ticker:'NQ=F',unit:'index',decimals:2,percentChart:true},
+    {id:'sp500-futures',no:2,name:'S&P 500 선물',ticker:'ES=F',unit:'index',decimals:2,percentChart:true},
     {id:'sox',no:5,name:'필라델피아 반도체 지수',ticker:'^SOX',unit:'index',percentChart:true},
-    {id:'nvda-m7',no:3,name:'엔비디아',ticker:'NVDA',unit:'stock',percentChart:true},
-    {id:'aapl',no:3,name:'애플',ticker:'AAPL',unit:'stock',percentChart:true},
-    {id:'googl',no:3,name:'알파벳 Class A',ticker:'GOOGL',unit:'stock',percentChart:true},
-    {id:'msft',no:3,name:'마이크로소프트',ticker:'MSFT',unit:'stock',percentChart:true},
-    {id:'amzn',no:3,name:'아마존',ticker:'AMZN',unit:'stock',percentChart:true},
-    {id:'tsla',no:3,name:'테슬라',ticker:'TSLA',unit:'stock',percentChart:true},
-    {id:'meta',no:3,name:'메타',ticker:'META',unit:'stock',percentChart:true}
+    {id:'nvda-m7',no:6,name:'엔비디아',ticker:'NVDA',unit:'stock',percentChart:true},
+    {id:'aapl',no:6,name:'애플',ticker:'AAPL',unit:'stock',percentChart:true},
+    {id:'googl',no:6,name:'알파벳 Class A',ticker:'GOOGL',unit:'stock',percentChart:true},
+    {id:'msft',no:6,name:'마이크로소프트',ticker:'MSFT',unit:'stock',percentChart:true},
+    {id:'amzn',no:6,name:'아마존',ticker:'AMZN',unit:'stock',percentChart:true},
+    {id:'tsla',no:6,name:'테슬라',ticker:'TSLA',unit:'stock',percentChart:true},
+    {id:'meta',no:6,name:'메타',ticker:'META',unit:'stock',percentChart:true}
   ]},
   {label:'금리·환율·원자재',items:[
-    {id:'us2y',no:6,name:'미국 2년물 국채금리',source:'treasury',treasuryField:'BC_2YEAR',unit:'yield',suffix:'%',decimals:3},
-    {id:'us10y',no:7,name:'미국 10년물 국채금리',source:'treasury',treasuryField:'BC_10YEAR',unit:'yield',suffix:'%',decimals:3},
-    {id:'us30y',no:8,name:'미국 30년물 국채금리',source:'treasury',treasuryField:'BC_30YEAR',unit:'yield',suffix:'%',decimals:3},
-    {id:'dxy',no:9,name:'달러인덱스',ticker:'DX-Y.NYB',unit:'index'},
-    {id:'usdkRW',no:10,name:'원/달러 환율',ticker:'KRW=X',unit:'fx',suffix:'원',decimals:2},
-    {id:'wti',no:11,name:'WTI 유가',ticker:'CL=F',unit:'commodity',suffix:'$',decimals:2},
-    {id:'brent',no:12,name:'브렌트유 유가',ticker:'BZ=F',unit:'commodity',suffix:'$',decimals:2},
-    {id:'vix',no:13,name:'VIX',ticker:'^VIX',unit:'index',decimals:2}
+    {id:'us2y',no:8,name:'미국 2년물 국채금리',source:'treasury',treasuryField:'BC_2YEAR',unit:'yield',suffix:'%',decimals:3},
+    {id:'us10y',no:9,name:'미국 10년물 국채금리',source:'treasury',treasuryField:'BC_10YEAR',unit:'yield',suffix:'%',decimals:3},
+    {id:'us30y',no:10,name:'미국 30년물 국채금리',source:'treasury',treasuryField:'BC_30YEAR',unit:'yield',suffix:'%',decimals:3},
+    {id:'dxy',no:11,name:'달러인덱스',ticker:'DX-Y.NYB',unit:'index'},
+    {id:'usdkRW',no:12,name:'원/달러 환율',ticker:'KRW=X',unit:'fx',suffix:'원',decimals:2},
+    {id:'wti',no:13,name:'WTI 유가',ticker:'CL=F',unit:'commodity',suffix:'$',decimals:2},
+    {id:'brent',no:14,name:'브렌트유 유가',ticker:'BZ=F',unit:'commodity',suffix:'$',decimals:2},
+    {id:'vix',no:15,name:'VIX',ticker:'^VIX',unit:'index',decimals:2},
+    {id:'ndx-index',no:16,name:'나스닥 100 (NDX)',ticker:'^NDX',unit:'index',percentChart:true}
   ]},
   {label:'국내 증시',items:[
-    {id:'kospi200night',no:12,name:'코스피200 야간선물',source:'kredNightFutures',page:'https://kred.dev/ko/kospi-200-night-futures',unit:'futures',decimals:2},
-    {id:'kosdaq150night',no:13,name:'코스닥150 야간선물',source:'kredNightFutures',page:'https://kred.dev/ko/kosdaq-150-night-futures',unit:'futures',decimals:2}
+    {id:'kospi200night',no:3,name:'코스피200 야간선물',source:'kredNightFutures',page:'https://kred.dev/ko/kospi-200-night-futures',unit:'futures',decimals:2},
+    {id:'kosdaq150night',no:4,name:'코스닥150 야간선물',source:'kredNightFutures',page:'https://kred.dev/ko/kosdaq-150-night-futures',unit:'futures',decimals:2}
   ]}
 ];
 // SOXQ가 추종하는 PHLX Semiconductor Sector Index의 구성 종목 풀(현행 30개 종목).
@@ -46,18 +47,19 @@ const SEMICONDUCTOR_UNIVERSE=[
   ['gfs','GFS','글로벌파운드리스'],['q','Q','큐니티 일렉트로닉스'],['entg','ENTG','엔테그리스'],
   ['tsem','TSEM','타워 세미컨덕터'],['mtsi','MTSI','MACOM 테크놀로지'],['sitm','SITM','SiTime'],['lscc','LSCC','래티스 세미컨덕터']
 ].map(([id,ticker,name])=>({id,no:5,name,ticker,unit:'stock',semiconductorCandidate:true,summaryActive:false}));
-const SKHY_ITEM={id:'skhy',no:4,name:'SK hynix ADR',ticker:'SKHY',unit:'stock',percentChart:true};
-// Summary and chart order: indices -> M7 -> SK hynix ADR (No. 4) -> activity lists -> SOX (No. 5) -> SOX constituent top 16.
+const SKHY_ITEM={id:'skhy',no:7,name:'SK hynix ADR',ticker:'SKHY',unit:'stock',percentChart:true};
+// Summary and chart order: U.S. indices -> Korean night futures -> SOX (No. 5) -> M7 (No. 6) -> SK hynix ADR (No. 7) -> activity lists.
 const firstGroup=groups[0].items;
 const byId=new Map(firstGroup.map(item=>[item.id,item]));
 groups[0].items=[
   byId.get('nasdaq'),byId.get('nasdaq-futures'),byId.get('sp500'),byId.get('sp500-futures'),
-  ...['nvda-m7','aapl','googl','msft','amzn','tsla','meta'].map(id=>byId.get(id)),
-  SKHY_ITEM,byId.get('sox'),
+  byId.get('sox'),...['nvda-m7','aapl','googl','msft','amzn','tsla','meta'].map(id=>byId.get(id)),
+  SKHY_ITEM,
   ...SEMICONDUCTOR_UNIVERSE
 ].filter(Boolean);
 const all=groups.flatMap(g=>g.items);
 const dataById=new Map(),charts=new Map();
+let ndxVolatility=null; // ^VXN is fetched as a calculation input; it is not shown as a separate chart.
 let semiconductorExpanded=false;
 const ACTIVITY_TYPES={
   turnover:{label:'거래대금 상위(20종목)',metric:'turnover',expanded:false,items:[],containerId:'activity-turnover-summary',chartContainerId:'activity-turnover-charts'},
@@ -234,12 +236,13 @@ async function renderActivityCharts(type,grid){
 }
 function makeSummaryCell(ref){
     const cell=document.createElement('div');
-    cell.className='summary-cell'+(ref.id==='kospi200night'||ref.id==='kosdaq150night'?' night-futures-summary-cell':'')+(ref.no===3?' m7-summary-cell':'')+(ref.id==='skhy'?' skhy-reversed-summary-cell':'')+(['nasdaq','sp500','sox','kospi200night','kosdaq150night'].includes(ref.id)?' soft-green-summary-cell':'');
+    cell.className='summary-cell'+(ref.id==='kospi200night'||ref.id==='kosdaq150night'?' night-futures-summary-cell':'')+(ref.no===6?' m7-summary-cell':'')+(ref.id==='skhy'?' skhy-reversed-summary-cell':'')+(['nasdaq','sp500','sox','kospi200night','kosdaq150night','ndx-index'].includes(ref.id)?' soft-green-summary-cell':'');
     const targetId=ref.chartId||ref.id;
     const link=ref.url?`<a class="summary-chart-link" href="${ref.url}" target="_blank" rel="noopener noreferrer">차트</a>`:`<a class="summary-chart-link internal-chart-link" href="#chart-card-${targetId}" data-chart-target="chart-card-${targetId}">차트</a>`;
     const ticker=ref.ticker||all.find(item=>item.id===ref.id)?.ticker;
     const displayName=`${ref.no!==''&&ref.no!==null&&ref.no!==undefined?`${ref.no}. `:''}${ref.name}${ticker?` [${ticker}]`:''}`;
-    cell.innerHTML=`<div class="summary-titleline"><div class="summary-label">${displayName}</div>${link}</div><div class="summary-price-line"><div class="summary-quote-values"><div class="summary-price">${blank}</div><div class="summary-change neutral">${blank} · ${blank}</div>${all.find(item=>item.id===ref.id)?.unit==='stock'?`<div class="summary-session-box"><div class="summary-session-item"><span class="summary-session-label">프리마켓</span><span class="summary-session-value summary-pre-price">${blank}</span><span class="summary-session-delta summary-pre-delta neutral">${blank}</span><span class="summary-session-pct summary-pre-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">정규장</span><span class="summary-session-value summary-regular-price">${blank}</span><span class="summary-session-delta summary-regular-delta neutral">${blank}</span><span class="summary-session-pct summary-regular-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">애프터마켓</span><span class="summary-session-value summary-post-price">${blank}</span><span class="summary-session-delta summary-post-delta neutral">${blank}</span><span class="summary-session-pct summary-post-pct neutral">${blank}</span></div></div>`:''}</div></div>`;
+    const blankOnly=!!ref.blankOnly||!!all.find(item=>item.id===ref.id)?.blankSummary;
+    cell.innerHTML=`<div class="summary-titleline"><div class="summary-label">${displayName}</div>${link}</div>${blankOnly?'':`<div class="summary-price-line"><div class="summary-quote-values"><div class="summary-price">${blank}</div><div class="summary-change neutral">${blank} · ${blank}</div>${all.find(item=>item.id===ref.id)?.unit==='stock'?`<div class="summary-session-box"><div class="summary-session-item"><span class="summary-session-label">프리마켓</span><span class="summary-session-value summary-pre-price">${blank}</span><span class="summary-session-delta summary-pre-delta neutral">${blank}</span><span class="summary-session-pct summary-pre-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">정규장</span><span class="summary-session-value summary-regular-price">${blank}</span><span class="summary-session-delta summary-regular-delta neutral">${blank}</span><span class="summary-session-pct summary-regular-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">애프터마켓</span><span class="summary-session-value summary-post-price">${blank}</span><span class="summary-session-delta summary-post-delta neutral">${blank}</span><span class="summary-session-pct summary-post-pct neutral">${blank}</span></div></div>`:''}</div></div>`}`;
     cell.dataset.summaryId=ref.id;
     return cell;
   }
@@ -257,8 +260,8 @@ function makeSummary(){
     if(av===null&&bv===null)return SEMICONDUCTOR_UNIVERSE.indexOf(a)-SEMICONDUCTOR_UNIVERSE.indexOf(b);
     if(av===null)return 1;if(bv===null)return -1;return bv-av;
   }).slice(0,16).map(x=>({no:5,id:x.id,name:x.name,ticker:x.ticker}));
-  const m7Refs=m7Items.map(x=>({no:3,id:x.id,name:m7Names[x.id],ticker:x.ticker}));
-  const skhyRef={no:4,id:'skhy',name:'SK hynix ADR',ticker:'SKHY'};
+  const m7Refs=m7Items.map(x=>({no:6,id:x.id,name:m7Names[x.id],ticker:x.ticker}));
+  const skhyRef={no:7,id:'skhy',name:'SK hynix ADR',ticker:'SKHY'};
   const m7Rows=[[m7Refs[0],m7Refs[1]],[m7Refs[2],m7Refs[3]],[m7Refs[4],m7Refs[5]],[m7Refs[6],skhyRef]];
   const rows=[
     {items:[
@@ -267,27 +270,53 @@ function makeSummary(){
       {no:2,id:'sp500',name:'S&P 500',ticker:'^GSPC'},
       {no:2,id:'sp500-futures',name:'S&P 500 선물',ticker:'ES=F'}
     ],marketIndex:true,after:true},
+    {items:[{no:3,id:'kospi200night',name:'코스피200 야간선물',url:'https://kred.dev/ko/kospi-200-night-futures'},{no:4,id:'kosdaq150night',name:'코스닥150 야간선물',url:'https://kred.dev/ko/kosdaq-150-night-futures'}],after:true},
+    {items:[{no:5,id:'sox',name:'필라델피아 반도체 지수',ticker:'^SOX'}],single:true,semis,after:true},
     ...m7Rows.map((items,index)=>({items,m7:true,after:index===3})),
     {activityType:'turnover'},
     {activityType:'volume',after:true},
-    {items:[{no:5,id:'sox',name:'필라델피아 반도체 지수',ticker:'^SOX'}],single:true,semis,after:true},
-    {items:[{no:6,id:'us2y',name:'미국 2년물'},{no:7,id:'us10y',name:'미국 10년물'},{no:8,id:'us30y',name:'미국 30년물'}]},
-    {items:[{no:9,id:'dxy',name:'달러인덱스'},{no:10,id:'usdkRW',name:'원/달러'}]},
-    {items:[{no:11,id:'wti',name:'WTI 유가'},{no:12,id:'brent',name:'브렌트유'},{no:13,id:'vix',name:'VIX'}]},
-    {items:[{no:13,id:'kospi200night',name:'코스피200 야간선물',url:'https://kred.dev/ko/kospi-200-night-futures'},{no:14,id:'kosdaq150night',name:'코스닥150 야간선물',url:'https://kred.dev/ko/kosdaq-150-night-futures'}],before:true}
+    {items:[{no:8,id:'us2y',name:'미국 2년물'},{no:9,id:'us10y',name:'미국 10년물'},{no:10,id:'us30y',name:'미국 30년물'}]},
+    {items:[{no:11,id:'dxy',name:'달러인덱스'},{no:12,id:'usdkRW',name:'원/달러'}]},
+    {items:[{no:13,id:'wti',name:'WTI 유가'},{no:14,id:'brent',name:'브렌트유'}],after:true},
+    {groupTitle:'VIX · S&P 500 Expected Move'},
+    {expectedMoveGroup:{spotId:'sp500',volId:'vix',prefix:'spx',underlyingNote:'S&P 500 기준'},items:[{no:'',id:'vix',name:'VIX',ticker:'^VIX'}],after:true},
+    {groupTitle:'NDX · Expected Move'},
+    {expectedMoveGroup:{spotId:'ndx-index',volId:'ndx-vxn',prefix:'ndx',underlyingNote:'VXN 변동성 기준'},items:[{no:'',id:'ndx-index',name:'NDX',ticker:'^NDX'}]}
   ];
   function makeSummaryCell(ref){
     const cell=document.createElement('div');
-    cell.className='summary-cell'+(ref.id==='kospi200night'||ref.id==='kosdaq150night'?' night-futures-summary-cell':'')+(ref.no===3?' m7-summary-cell':'')+(ref.id==='skhy'?' skhy-reversed-summary-cell':'')+(['nasdaq','sp500','sox','kospi200night','kosdaq150night'].includes(ref.id)?' soft-green-summary-cell':'');
+    cell.className='summary-cell'+(ref.id==='kospi200night'||ref.id==='kosdaq150night'?' night-futures-summary-cell':'')+(ref.no===6?' m7-summary-cell':'')+(ref.id==='skhy'?' skhy-reversed-summary-cell':'')+(['nasdaq','sp500','sox','kospi200night','kosdaq150night','ndx-index'].includes(ref.id)?' soft-green-summary-cell':'');
     const targetId=ref.chartId||ref.id;
     const link=ref.url?`<a class="summary-chart-link" href="${ref.url}" target="_blank" rel="noopener noreferrer">차트</a>`:`<a class="summary-chart-link internal-chart-link" href="#chart-card-${targetId}" data-chart-target="chart-card-${targetId}">차트</a>`;
     const ticker=ref.ticker||all.find(item=>item.id===ref.id)?.ticker;
     const displayName=`${ref.no!==''&&ref.no!==null&&ref.no!==undefined?`${ref.no}. `:''}${ref.name}${ticker?` [${ticker}]`:''}`;
-    cell.innerHTML=`<div class="summary-titleline"><div class="summary-label">${displayName}</div>${link}</div><div class="summary-price-line"><div class="summary-quote-values"><div class="summary-price">${blank}</div><div class="summary-change neutral">${blank} · ${blank}</div>${all.find(item=>item.id===ref.id)?.unit==='stock'?`<div class="summary-session-box"><div class="summary-session-item"><span class="summary-session-label">프리마켓</span><span class="summary-session-value summary-pre-price">${blank}</span><span class="summary-session-delta summary-pre-delta neutral">${blank}</span><span class="summary-session-pct summary-pre-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">정규장</span><span class="summary-session-value summary-regular-price">${blank}</span><span class="summary-session-delta summary-regular-delta neutral">${blank}</span><span class="summary-session-pct summary-regular-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">애프터마켓</span><span class="summary-session-value summary-post-price">${blank}</span><span class="summary-session-delta summary-post-delta neutral">${blank}</span><span class="summary-session-pct summary-post-pct neutral">${blank}</span></div></div>`:''}</div></div>`;
+    const blankOnly=!!ref.blankOnly||!!all.find(item=>item.id===ref.id)?.blankSummary;
+    cell.innerHTML=`<div class="summary-titleline"><div class="summary-label">${displayName}</div>${link}</div>${blankOnly?'':`<div class="summary-price-line"><div class="summary-quote-values"><div class="summary-price">${blank}</div><div class="summary-change neutral">${blank} · ${blank}</div>${all.find(item=>item.id===ref.id)?.unit==='stock'?`<div class="summary-session-box"><div class="summary-session-item"><span class="summary-session-label">프리마켓</span><span class="summary-session-value summary-pre-price">${blank}</span><span class="summary-session-delta summary-pre-delta neutral">${blank}</span><span class="summary-session-pct summary-pre-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">정규장</span><span class="summary-session-value summary-regular-price">${blank}</span><span class="summary-session-delta summary-regular-delta neutral">${blank}</span><span class="summary-session-pct summary-regular-pct neutral">${blank}</span></div><div class="summary-session-item"><span class="summary-session-label">애프터마켓</span><span class="summary-session-value summary-post-price">${blank}</span><span class="summary-session-delta summary-post-delta neutral">${blank}</span><span class="summary-session-pct summary-post-pct neutral">${blank}</span></div></div>`:''}</div></div>`}`;
     cell.dataset.summaryId=ref.id;
     return cell;
   }
   rows.forEach(row=>{
+    if(row.groupTitle){
+      const heading=document.createElement('div');
+      heading.className='summary-group-title';
+      heading.textContent=row.groupTitle;
+      root.appendChild(heading);
+      return;
+    }
+    if(row.expectedMoveGroup){
+      const line=document.createElement('div');
+      line.className='summary-row expected-move-group-row'+(row.after?' summary-divider-after':'');
+      line.style.setProperty('--cols',4);
+      row.items.forEach(ref=>line.appendChild(makeSummaryCell(ref)));
+      [['1일',1],['1주일',7],['1개월',30]].forEach(([label,days])=>{
+        const cell=document.createElement('div');
+        cell.className='summary-cell expected-move-cell';
+        cell.innerHTML=`<div class="summary-label">Expected Move (${label})</div><div class="expected-move-value" data-em-prefix="${row.expectedMoveGroup.prefix}" data-em-days="${days}">${blank}</div><div class="expected-move-note">${row.expectedMoveGroup.underlyingNote}</div><div class="expected-move-range"><span>예상 상단 <b data-em-side="upper">${blank}</b></span><span>예상 하단 <b data-em-side="lower">${blank}</b></span></div>`;
+        line.appendChild(cell);
+      });
+      root.appendChild(line);
+      return;
+    }
     if(row.activityType){
       const type=row.activityType;
       const config=ACTIVITY_TYPES[type];
@@ -336,8 +365,8 @@ function makeCharts(){
     const heading=document.createElement('div');heading.className='section-heading group-heading';heading.innerHTML=`<div><span class="eyebrow">${group.label==='미국 증시'?'U.S. MARKETS':group.label==='금리·환율·원자재'?'RATES · FX · COMMODITIES':'KOREA MARKETS'}</span><h2>${group.label}</h2></div>`;root.appendChild(heading);
     let semiconductorWrap=null;
     visibleItems.forEach(item=>{
-      if(item.id==='sox'){
-        // Place the two independent activity controls between SK hynix ADR and the SOX chart.
+      if(item.id==='us2y'){
+        // Keep the activity controls after the SOX, M7, and SK hynix chart cards.
         Object.entries(ACTIVITY_TYPES).forEach(([type,config])=>{
           const controlCell=document.createElement('article');
           controlCell.className='chart-card activity-chart-control-cell';
@@ -348,13 +377,13 @@ function makeCharts(){
         });
       }
       const card=document.createElement('article');
-      card.className='chart-card'+(['nvda-m7','sox','us2y'].includes(item.id)?' chart-divider-before':'');
+      card.className='chart-card'+(['sox','nvda-m7','us2y','vix'].includes(item.id)?' chart-divider-before':'');
       card.id=`chart-card-${item.id}`;
       card.innerHTML=`<div class="chart-top"><div class="chart-title"><span class="number">${item.no}</span><h3>${item.name}${item.ticker?` [${item.ticker}]`:''}</h3></div><div class="quote-block"><div class="quote-close">${blank}</div><div class="quote-change neutral">${blank} · ${blank}</div><div class="quote-date">종가 기준</div></div></div><div class="chart-range-toolbar" data-range-for="${item.id}"><button type="button" data-range="1M">1M</button><button type="button" data-range="3M" class="selected">3M</button><button type="button" data-range="6M">6M</button><button type="button" data-range="YTD">YTD</button><button type="button" data-range="1Y">1Y</button><button type="button" data-range="ALL">ALL</button></div><div id="chart-${item.id}" class="chart-area"><div class="chart-empty">시세 데이터를 불러오는 중…</div></div><div class="chart-foot"><span class="chart-note">${item.ticker||''}</span><span class="bar-count">전체 기간 데이터</span></div>`;
       if(item.semiconductorCandidate&&semiconductorWrap){semiconductorWrap.appendChild(card);}
       else root.appendChild(card);
       item.card=card;
-      if(item.id==='sox'){
+      if(item.id==='sox'){ 
         const toggle=createSemiconductorToggle();toggle.classList.add('semiconductor-toggle-in-chart');card.appendChild(toggle);
         semiconductorWrap=document.createElement('div');semiconductorWrap.className='chart-semiconductor-content';semiconductorWrap.dataset.semiconductorContent='true';semiconductorWrap.hidden=!semiconductorExpanded;card.appendChild(semiconductorWrap);
       }
@@ -445,7 +474,53 @@ async function refreshMarketCaps(){
     updateSummary();return 0;
   }
 }
-function updateSummary(){document.querySelectorAll('[data-summary-id]').forEach(cell=>{const item=all.find(x=>x.id===cell.dataset.summaryId);const price=cell.querySelector('.summary-price'),change=cell.querySelector('.summary-change');const colorIndex=!!item;if(item?.last==null){price.textContent=(item?.source==='nightFuturesEmbed'||item?.source==='tradingviewEmbed')?'차트 참조':blank;price.className=`summary-price${colorIndex?' neutral':''}`;change.textContent=(item?.source==='nightFuturesEmbed'||item?.source==='tradingviewEmbed')?'차트에서 시세 확인':'데이터 확인 필요';change.className='summary-change neutral';return;}price.textContent=closeText(item,item.last);price.className=`summary-price${colorIndex?' '+colorClass(item.delta):''}`;change.textContent=`${changeText(item,item.delta)} · ${pctText(item.pct)}`;change.className=`summary-change ${colorClass(item.delta)}`;if(item.unit==='stock'){const sessions=[['pre',item.preMarketPrice,item.preMarketDelta,item.preMarketPct],['regular',item.regularMarketPrice,item.regularMarketDelta,item.regularMarketPct],['post',item.afterMarketPrice,item.afterMarketDelta,item.afterMarketPct]];sessions.forEach(([key,p,d,pct])=>{const pEl=cell.querySelector(`.summary-${key}-price`),dEl=cell.querySelector(`.summary-${key}-delta`),pctEl=cell.querySelector(`.summary-${key}-pct`);if(!pEl||!dEl||!pctEl)return;const valid=Number.isFinite(p)&&p>0;pEl.textContent=valid?closeText(item,p):blank;pEl.className=`summary-session-value summary-${key}-price ${valid?colorClass(d):'neutral'}`;dEl.textContent=valid&&Number.isFinite(d)?changeText(item,d):blank;dEl.className=`summary-session-delta summary-${key}-delta ${valid?colorClass(d):'neutral'}`;pctEl.textContent=valid&&Number.isFinite(pct)?pctText(pct):blank;pctEl.className=`summary-session-pct summary-${key}-pct ${valid?colorClass(d):'neutral'}`;});}});}
+function updateSummary(){
+  document.querySelectorAll('[data-summary-id]').forEach(cell=>{
+    const item=all.find(x=>x.id===cell.dataset.summaryId);
+    const price=cell.querySelector('.summary-price'),change=cell.querySelector('.summary-change');
+    const colorIndex=!!item;
+    if(item?.last==null){
+      price.textContent=(item?.source==='nightFuturesEmbed'||item?.source==='tradingviewEmbed')?'차트 참조':blank;
+      price.className=`summary-price${colorIndex?' neutral':''}`;
+      change.textContent=(item?.source==='nightFuturesEmbed'||item?.source==='tradingviewEmbed')?'차트에서 시세 확인':'데이터 확인 필요';
+      change.className='summary-change neutral';
+      return;
+    }
+    price.textContent=closeText(item,item.last);
+    price.className=`summary-price${colorIndex?' '+colorClass(item.delta):''}`;
+    change.textContent=`${changeText(item,item.delta)} · ${pctText(item.pct)}`;
+    change.className=`summary-change ${colorClass(item.delta)}`;
+    if(item.unit==='stock'){
+      const sessions=[['pre',item.preMarketPrice,item.preMarketDelta,item.preMarketPct],['regular',item.regularMarketPrice,item.regularMarketDelta,item.regularMarketPct],['post',item.afterMarketPrice,item.afterMarketDelta,item.afterMarketPct]];
+      sessions.forEach(([key,p,d,pct])=>{
+        const pEl=cell.querySelector(`.summary-${key}-price`),dEl=cell.querySelector(`.summary-${key}-delta`),pctEl=cell.querySelector(`.summary-${key}-pct`);
+        if(!pEl||!dEl||!pctEl)return;
+        const valid=Number.isFinite(p)&&p>0;
+        pEl.textContent=valid?closeText(item,p):blank;
+        pEl.className=`summary-session-value summary-${key}-price ${valid?colorClass(d):'neutral'}`;
+        dEl.textContent=valid&&Number.isFinite(d)?changeText(item,d):blank;
+        dEl.className=`summary-session-delta summary-${key}-delta ${valid?colorClass(d):'neutral'}`;
+        pctEl.textContent=valid&&Number.isFinite(pct)?pctText(pct):blank;
+        pctEl.className=`summary-session-pct summary-${key}-pct ${valid?colorClass(d):'neutral'}`;
+      });
+    }
+  });
+  document.querySelectorAll('.expected-move-cell').forEach(cell=>{
+    const valueEl=cell.querySelector('.expected-move-value');
+    const prefix=valueEl?.dataset.emPrefix;
+    const days=Number(valueEl?.dataset.emDays);
+    const spotId=prefix==='spx'?'sp500':'ndx-index';
+    const spot=all.find(x=>x.id===spotId)?.last;
+    const vol=prefix==='spx'?all.find(x=>x.id==='vix')?.last:ndxVolatility;
+    const move=Number.isFinite(spot)&&spot>0&&Number.isFinite(vol)&&vol>0?spot*(vol/100)*Math.sqrt(days/365):null;
+    const upper=move===null?null:spot+move,lower=move===null?null:spot-move;
+    valueEl.textContent=move===null?blank:`±${fmt(move,1)} pt`;
+    const upperEl=cell.querySelector('[data-em-side="upper"]');
+    const lowerEl=cell.querySelector('[data-em-side="lower"]');
+    if(upperEl)upperEl.textContent=upper===null?blank:fmt(upper,1);
+    if(lowerEl)lowerEl.textContent=lower===null?blank:fmt(lower,1);
+  });
+}
 async function refreshAll(){
   const button=$('refresh');
   button.disabled=true;
@@ -485,6 +560,12 @@ async function refreshAll(){
     }
   }
   await Promise.all(Array.from({length:6},()=>worker()));
+  try{
+    const vxnSeries=await fetchSeries({id:'ndx-vxn',name:'VXN',ticker:'^VXN',unit:'index',decimals:2});
+    const latestVxn=vxnSeries.values[vxnSeries.values.length-1];
+    ndxVolatility=latestVxn?.value??null;
+    if(!Number.isFinite(ndxVolatility)||ndxVolatility<=0)throw new Error('VXN 변동성 데이터 없음');
+  }catch(vxnError){ndxVolatility=null;fail++;console.warn('VXN 변동성 데이터 조회 실패',vxnError);}
   updateSummary();
   $('updated').textContent=`${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 갱신`;
   $('status').textContent=fail?`정상 ${success}개 · 확인 필요 ${fail}개`:`${success}개 시세 연결 완료`;
