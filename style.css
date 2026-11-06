@@ -394,3 +394,60 @@
 @media(max-width:760px){
   .summary-row.hyperscaler-summary-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
 }
+
+/* 새로고침 버튼: '시장 수급 분석' 화면의 버튼과 동일한 모양 */
+.tools button#refresh{font:inherit;cursor:pointer;width:34px;height:34px;padding:0;border:1px solid var(--line);background:#f8f9fb;border-radius:10px;color:#657287;font-size:17px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.tools button#refresh:active{background:#eaf0f7}
+.tools button#refresh:disabled{opacity:.55}
+
+
+/* 명암 버튼: 새로고침 버튼과 동일한 모양 */
+.tools button#theme{font:inherit;cursor:pointer;width:34px;height:34px;padding:0;border:1px solid var(--line);background:#f8f9fb;border-radius:10px;color:#657287;font-size:17px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.tools button#theme:active{background:#eaf0f7}
+
+/* ===== 다크 모드 ===== */
+body.dark{--bg:#151a22;--card:#202733;--line:#303a49;--text:#edf1f6;--muted:#9aa6b8;--accent:#38577f;--soft:#1a212c;--up:#f0606e;--down:#5b9cf0;color-scheme:dark}
+body.dark header{background:#1c232eed}
+body.dark .brand small{color:#7f8b9d}
+body.dark .eyebrow{color:#7fa0c6}
+body.dark .tools button,body.dark .tools button#theme,body.dark .tools button#refresh{background:#2a3342;border-color:var(--line);color:#c3cddb}
+body.dark .tools button#theme:active,body.dark .tools button#refresh:active{background:#344055}
+body.dark .card,body.dark .chart-card{box-shadow:none}
+body.dark .summary-cell{background:var(--soft);border-color:#2b3543}
+body.dark .summary-label,body.dark .expected-move-range b{color:#d5deea}
+body.dark .summary-cell.m7-summary-cell{background-color:var(--soft)!important;border-color:#2b3543!important}
+body.dark .summary-cell.soft-green-summary-cell,body.dark .summary-cell.vix-summary-cell,body.dark .summary-cell.skhy-reversed-summary-cell{background-color:#252e3c!important;border-color:#323d4e!important}
+body.dark .summary-cell.skhy-reversed-summary-cell .summary-session-box{background:var(--soft)!important}
+body.dark .summary-session-box{background:rgba(255,255,255,.06)}
+body.dark .summary-session-label{color:#93a0b3}
+body.dark .summary-cell .summary-chart-link{background:#323d4e!important;color:#b6c3d6!important;border-color:#3d495c!important}
+body.dark .internal-chart-link{background:#323d4e;color:#b6c3d6}
+body.dark .summary-row.summary-divider-before{border-top-color:#303a49}
+body.dark .summary-row.summary-divider-after{border-bottom-color:#303a49}
+body.dark .chart-card.chart-divider-before,body.dark .chart-semiconductor-content .chart-card.chart-divider-before{border-top-color:#303a49}
+body.dark .chart-semiconductor-content{border-top-color:var(--line)}
+body.dark .chart-semiconductor-content .chart-card,body.dark .activity-chart-card{background:var(--soft);border-color:#2b3543}
+body.dark .chart-title .number{background:#2a3342;color:#9db4d1}
+body.dark .chart-subtitle,body.dark .chart-foot .bar-count{color:var(--muted)}
+body.dark .chart-area .chart-empty{background:linear-gradient(180deg,#1a212c,#202733)}
+body.dark .semiconductor-toggle,body.dark .activity-button-cell{background:#252e3c;border-color:#323d4e;color:#c3cddb}
+body.dark .semiconductor-toggle:active{background:#2e3949}
+body.dark .semiconductor-toggle-in-cell,body.dark .semiconductor-toggle-in-chart,body.dark .activity-toggle,body.dark .activity-chart-control-cell .activity-toggle{background:var(--soft);border-color:#2b3543;color:#c3cddb}
+body.dark .activity-toggle:active{background:#252e3c}
+body.dark .activity-chart-control-cell{background:var(--card);border-color:var(--line);box-shadow:none}
+body.dark .activity-result-content .summary-cell,body.dark .activity-summary-grid .summary-cell,body.dark .semiconductor-summary-grid .summary-cell{background:var(--soft);border-color:#2b3543}
+body.dark .activity-error{background:#3a2c1c;border-color:#5c4426;color:#f0b877}
+body.dark .error-note{color:#e0a352!important}
+body.dark .chart-range-toolbar button{background:#2a3342;border-color:#3a4658;color:#aebacb}
+body.dark .chart-range-toolbar button.selected{background:#3b5278;color:#fff;border-color:#4a638c}
+body.dark .external-chart-panel{background:linear-gradient(135deg,#1c232e,#232c3a);border-color:#303a49}
+body.dark .external-chart-note{color:#9aa6b8}
+body.dark .external-chart-link{background:#38577f}
+body.dark .expected-move-cell .expected-move-value{color:#e1e9f4}
+body.dark .expected-move-note{color:#8f9bad}
+body.dark .expected-move-range{color:#9aa6b8}
+body.dark .night-link-row{border-top-color:var(--line)}
+body.dark .night-link-row a{color:#7fb0ff}
+body.dark .live-dot{background:#5b6677}
+body.dark .live-dot.active{background:#37b87d}
+body.dark .tradingview-frame,body.dark .kred-frame{background:#202733}
