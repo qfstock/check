@@ -1,6 +1,6 @@
 'use strict';
 // Yahoo Finance chart API is accessed through the companion Cloudflare Worker.
-const PROXY_BASE='https://check.petdamon.workers.dev';
+const PROXY_BASE='https://pmc.mcraft-tiger-574.workers.dev';
 const $=id=>document.getElementById(id);
 const blank='—';
 const groups=[
@@ -27,7 +27,10 @@ const groups=[
     {id:'usdkRW',no:13,name:'원/달러 환율',ticker:'KRW=X',unit:'fx',suffix:'원',decimals:2},
     {id:'wti',no:14,name:'WTI 유가',ticker:'CL=F',unit:'commodity',suffix:'$',decimals:2},
     {id:'brent',no:15,name:'브렌트유 유가',ticker:'BZ=F',unit:'commodity',suffix:'$',decimals:2},
-    {id:'vix',no:16,name:'S&P 500 변동성 지수 VIX',ticker:'^VIX',unit:'index',decimals:2},
+    {id:'gold',no:16,name:'금',ticker:'GC=F',unit:'commodity',suffix:'$',decimals:2},
+    {id:'silver',no:17,name:'은',ticker:'SI=F',unit:'commodity',suffix:'$',decimals:3},
+    {id:'copper',no:18,name:'구리',ticker:'HG=F',unit:'commodity',suffix:'$',decimals:4},
+    {id:'vix',no:19,name:'S&P 500 변동성 지수 VIX',ticker:'^VIX',unit:'index',decimals:2},
     {id:'vxn',no:17,name:'나스닥 100 변동성 지수 (VXN)',ticker:'^VXN',unit:'index',decimals:2,percentChart:true}
   ]},
   {label:'국내 증시',items:[
@@ -333,6 +336,7 @@ function makeSummary(){
     {items:[{no:10,id:'us30y',name:'미국 30년물'},{no:11,id:'highyield',name:'하이일드 스프레드'}],after:true},
     {items:[{no:12,id:'dxy',name:'달러인덱스'},{no:13,id:'usdkRW',name:'원/달러'}]},
     {items:[{no:14,id:'wti',name:'WTI 유가'},{no:15,id:'brent',name:'브렌트유'}],after:true},
+    {items:[{no:16,id:'gold',name:'금',ticker:'GC=F'},{no:17,id:'silver',name:'은',ticker:'SI=F'},{no:18,id:'copper',name:'구리',ticker:'HG=F'}],after:true},
     {groupTitle:'VIX · S&P 500 Expected Move'},
     {expectedMoveGroup:{spotId:'sp500',volId:'vix',prefix:'spx',underlyingNote:'S&P 500 기준'},items:[{no:'',id:'vix',name:'S&P 500 변동성 지수 VIX',ticker:'^VIX'}],after:true},
     {groupTitle:'VXN · Nasdaq Expected Move'},
